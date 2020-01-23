@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "env NODE_ENV=development nodemon index.js",
     "test": "jest --runInBand",
     "test:dev": "jest --runInBand --watch",
     "lint": "eslint src/ --fix"
