@@ -1,15 +1,14 @@
 const { SECRET } = process.env
-
 const logger = require('debug')('components:authenticate:')
-const router = require('express').Router()
-const jwt = require('jsonwebtoken')
-const { User } = require('../../db/models')
-// const uuid = require('uuid/v4')
-const expressJwt = require('express-jwt')
 
-const tokenCreate = id => {
-	return jwt.sign(id, SECRET)
-}
+const router = require('express').Router()
+const { User } = require('../../db/models')
+
+const expressJwt = require('express-jwt')
+const { TokenExpiredError } = require('jsonwebtoken')
+const { UnauthorizedError } = require('express-jwt')
+
+const { tokenService } = require('../../services/token.service')
 
 router.post('/signin', async (req, res) => {
 	const { body } = req
@@ -24,7 +23,7 @@ router.post('/signin', async (req, res) => {
 				if (verify) {
 					return res.send({
 						message: 'Hello ' + email,
-						token: tokenCreate(user.id),
+						token: await tokenService.createToken(user.id),
 					})
 				}
 			}
@@ -56,7 +55,7 @@ router.post('/signup', async (req, res, next) => {
 
 		return res.send({
 			message: 'User was created',
-			token: tokenCreate(user.id),
+			token: await tokenService.createToken(user.id),
 		})
 	}
 
@@ -66,30 +65,35 @@ router.post('/signup', async (req, res, next) => {
 })
 
 const isAuth = [
-	(req, res, next) => {
-		req.body //?
-
-		next()
-	},
 	expressJwt({
 		secret: SECRET,
 	}),
-	(err, req, res, _next) => {
-		if (err.name === 'UnauthorizedError') {
+	async (err, req, res, _next) => {
+		if (err instanceof UnauthorizedError) {
+			if (err.inner instanceof TokenExpiredError) {
+				const token = req.headers.authorization.split(' ')[1]
+				const newToken = await tokenService.updateToken(token)
+
+				return res.status(401).send({
+					message: 'Expired token',
+					token: newToken,
+				})
+			}
+
 			res.status(401).send({
 				message: 'Invalid token',
 			})
 		}
 	},
 	async (req, res, next) => {
-		const userId = req.user
+		const userId = await tokenService.getUserId(req.user)
 
 		try {
 			const user = await User.findById(userId)
 
 			if (!user) {
 				res.status(401).send({
-					message: 'Invalid user',
+					message: 'Invalid token',
 				})
 			}
 

@@ -11,8 +11,7 @@ require('dotenv').config({
 	path: env,
 })
 
-const { SECRET } = process.env
-const jwt = require('jsonwebtoken')
+const { tokenService } = require('../../services/token.service')
 
 beforeAll(connect)
 beforeEach(clear)
@@ -44,9 +43,10 @@ describe('Sign Up', () => {
 			.send(user)
 
 		const { token } = res.body
-		const id = jwt.verify(token, SECRET)
+		const payload = tokenService.verify(token)
+		const userId = await tokenService.getUserId(payload)
+		const dbuser = await User.findById(userId)
 
-		const dbuser = await User.findById(id)
 		expect(res.statusCode).toBe(200)
 		expect(dbuser.email).toBe(user.email)
 	})
@@ -85,20 +85,22 @@ describe('Sign In', () => {
 
 	test('Valid signin', async () => {
 		const dbuser = await User.create(user)
-		const token = jwt.sign(dbuser.id, SECRET)
 
 		const res = await request(app)
 			.post('/auth/signin')
 			.send(user)
 
-		const serverToken = res.body.token
-		expect(serverToken).toBe(token)
+		const token = res.body.token
+		const payload = tokenService.verify(token)
+		const userId = await tokenService.getUserId(payload)
+
 		expect(res.statusCode).toBe(200)
+		expect(dbuser.id).toBe(userId)
 	})
 
 	test('Valid Authorization via token', async () => {
 		const dbuser = await User.create(user)
-		const token = jwt.sign(dbuser.id, SECRET)
+		const token = await tokenService.createToken(dbuser.id)
 
 		const res = await request(app)
 			.get('/profile')
@@ -123,5 +125,48 @@ describe('Sign In', () => {
 			.set('Authorization', 'Bearer ' + token)
 
 		expect(res.statusCode).toBe(401)
+	})
+
+	test('Get new Authorization via expired token', async () => {
+		const dbuser = await User.create(user)
+		const token = await tokenService.createToken(dbuser.id, {
+			expiresIn: '0s',
+		})
+
+		const res = await request(app)
+			.get('/profile')
+			.set('Authorization', 'Bearer ' + token)
+
+		expect(res.statusCode).toBe(401)
+		expect(res.body.token).toBeDefined()
+
+		const newRes = await request(app)
+			.get('/profile')
+			.set('Authorization', 'Bearer ' + res.body.token)
+
+		expect(newRes.statusCode).toBe(200)
+		expect(newRes.body.user.email).toBe(user.email)
+	})
+
+	test('Invalid token after update', async () => {
+		const dbuser = await User.create(user)
+		const token = await tokenService.createToken(dbuser.id, {
+			expiresIn: '0s',
+		})
+
+		const res = await request(app)
+			.get('/profile')
+			.set('Authorization', 'Bearer ' + token)
+
+		await request(app)
+			.get('/profile')
+			.set('Authorization', 'Bearer ' + res.body.token)
+
+		const otherRes = await request(app)
+			.get('/profile')
+			.set('Authorization', 'Bearer ' + token)
+
+		expect(otherRes.statusCode).toBe(401)
+		expect(otherRes.body.token).toBeUndefined()
 	})
 })
