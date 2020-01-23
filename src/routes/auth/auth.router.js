@@ -6,7 +6,7 @@ const { User } = require('../../db/models')
 
 const expressJwt = require('express-jwt')
 const { TokenExpiredError } = require('jsonwebtoken')
-const { UnauthorizedError } = require('express-jwt')
+const { UnauthorizedError } = require('../../errors')
 
 const { tokenService } = require('../../services/token.service')
 
@@ -68,6 +68,27 @@ const isAuth = [
 	expressJwt({
 		secret: SECRET,
 	}),
+	async (req, res, next) => {
+		if (!req.user.sid) {
+			return next(new UnauthorizedError('Invalid token'))
+		}
+
+		const userId = await tokenService.getUserId(req.user)
+
+		try {
+			const user = await User.findById(userId)
+
+			if (!user) {
+				return next(new UnauthorizedError('Invalid token'))
+			}
+
+			req.user = await user.getPublicFields()
+		} catch (err) {
+			return next(new UnauthorizedError(err.message))
+		}
+
+		next()
+	},
 	async (err, req, res, _next) => {
 		if (err instanceof UnauthorizedError) {
 			if (err.inner instanceof TokenExpiredError) {
@@ -80,31 +101,10 @@ const isAuth = [
 				})
 			}
 
-			res.status(401).send({
-				message: 'Invalid token',
+			res.status(err.status).send({
+				message: err.message || 'Invalid token',
 			})
 		}
-	},
-	async (req, res, next) => {
-		const userId = await tokenService.getUserId(req.user)
-
-		try {
-			const user = await User.findById(userId)
-
-			if (!user) {
-				res.status(401).send({
-					message: 'Invalid token',
-				})
-			}
-
-			req.user = await user.getPublicFields()
-		} catch (err) {
-			res.status(401).send({
-				message: 'Invalid token',
-			})
-		}
-
-		next()
 	},
 ]
 
