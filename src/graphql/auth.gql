@@ -1,0 +1,9 @@
+# import User, UserInput from "user.gql"
+
+type Query {
+	login(data: UserInput): User
+}
+
+type Mutation {
+	createUser(data: UserInput): User
+}

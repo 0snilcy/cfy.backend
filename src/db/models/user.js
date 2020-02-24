@@ -40,12 +40,13 @@ schema.methods.comparePassword = async function(password) {
 	}
 }
 
-schema.methods.getPublicFields = async function() {
+schema.methods.getPublicFields = function() {
 	return {
 		email: this.email,
+		id: this.id,
 	}
 }
 
 const User = mongoose.model('User', schema)
 
-module.exports = { User }
+module.exports = User

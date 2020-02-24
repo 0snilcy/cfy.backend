@@ -1,0 +1,12 @@
+# import User, UserInput from "user.gql"
+
+type Query {
+	user(email: String, id: String): User
+	users: [User]
+
+	profile: User
+}
+
+type Mutation {
+	updateUser(data: UserInput): User
+}

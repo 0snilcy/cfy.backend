@@ -7,7 +7,7 @@ bluebird.promisifyAll(redis.RedisClient.prototype)
 const uuid = require('uuid/v4')
 
 const defaultJwtConfig = {
-	expiresIn: '10m',
+	expiresIn: '20m',
 }
 
 class TokenService {

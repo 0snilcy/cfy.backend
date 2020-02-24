@@ -1,38 +1,45 @@
 {
-  "name": "coffy-back",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "env NODE_ENV=development nodemon index.js",
-    "test": "jest --runInBand",
-    "test:dev": "jest --runInBand --watch",
-    "lint": "eslint src/ --fix"
-  },
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "bluebird": "^3.7.2",
-    "debug": "^4.1.1",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "express-jwt": "^5.3.1",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.8.3",
-    "morgan": "^1.9.1",
-    "nodemon": "^2.0.2",
-    "redis": "^2.8.0",
-    "uuid": "^3.3.3"
-  },
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-arista-base": "1.1.0",
-    "eslint-plugin-prettier": "^3.1.2",
-    "jest": "^24.9.0",
-    "mongodb-memory-server": "^6.2.2",
-    "prettier": "^1.19.1",
-    "supertest": "^4.0.2"
-  },
-  "keywords": [],
-  "author": "Johnny Rocket",
-  "license": "ISC"
+	"name": "coffy-back",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "env NODE_ENV=development nodemon index.js",
+		"test": "jest --runInBand",
+		"test:dev": "jest --runInBand --watch",
+		"lint": "eslint src/ --fix"
+	},
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"bluebird": "^3.7.2",
+		"debug": "^4.1.1",
+		"dotenv": "^8.2.0",
+		"express": "^4.17.1",
+		"express-graphql": "^0.9.0",
+		"express-jwt": "^5.3.1",
+		"graphql": "^14.6.0",
+		"graphql-import": "^1.0.0-beta.2",
+		"graphql-tools": "^4.0.6",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "^5.8.3",
+		"morgan": "^1.9.1",
+		"nodemon": "^2.0.2",
+		"redis": "^2.8.0",
+		"uuid": "^3.3.3"
+	},
+	"devDependencies": {
+		"eslint": "^6.8.0",
+		"eslint-config-arista-base": "1.1.0",
+		"eslint-plugin-prettier": "^3.1.2",
+		"jest": "^24.9.0",
+		"mongodb-memory-server": "^6.2.2",
+		"prettier": "^1.19.1",
+		"supertest": "^4.0.2"
+	},
+	"keywords": [],
+	"author": {
+		"name": "Johnny Rocket"
+	},
+	"license": "ISC",
+	"private": true
 }

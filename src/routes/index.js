@@ -1,25 +1,44 @@
-const express = require('express')
-const mainRouter = express.Router()
-const { router: authRouter, isAuth } = require('./auth')
+const { isAuth } = require('./auth')
 
-mainRouter.get('/', (req, res) => {
-	res.send('Hello, world!')
-})
+const graphqlHTTP = require('express-graphql')
+const { importSchema } = require('graphql-import')
+const { buildSchema } = require('graphql')
+const apiResolvers = require('../graphql/resolvers')
+const authResolvers = require('../graphql/resolvers/auth')
 
-mainRouter.use('/auth', authRouter)
-
-mainRouter.use(isAuth)
-
-mainRouter.get('/profile', (req, res) => {
-	res.send({
-		user: req.user,
+const setRouters = async mainRouter => {
+	mainRouter.get('/', (req, res) => {
+		res.send('Hello, world!')
 	})
-})
 
-mainRouter.use((req, res) => {
-	res.status(404).send({
-		message: 'Not found',
+	const authSchema = await importSchema('src/graphql/auth.gql')
+	const apiSchema = await importSchema('src/graphql/api.gql')
+
+	mainRouter.use(
+		'/auth',
+		graphqlHTTP({
+			schema: buildSchema(authSchema),
+			rootValue: authResolvers,
+			graphiql: true,
+		})
+	)
+
+	mainRouter.use(isAuth)
+
+	mainRouter.use(
+		'/api',
+		graphqlHTTP({
+			schema: buildSchema(apiSchema),
+			rootValue: apiResolvers,
+			graphiql: true,
+		})
+	)
+
+	mainRouter.use((req, res) => {
+		res.status(404).send({
+			message: 'Not found',
+		})
 	})
-})
+}
 
-module.exports = mainRouter
+module.exports = setRouters

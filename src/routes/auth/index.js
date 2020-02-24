@@ -1,6 +1,5 @@
-const { router, isAuth } = require('./auth.router')
+const { isAuth } = require('./auth.router')
 
 module.exports = {
-	router,
 	isAuth,
 }
