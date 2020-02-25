@@ -1,8 +1,7 @@
 const User = require('../../db/models/user')
 
 const profile = async (data, req) => {
-	console.log('get profile')
-	console.log(req.headers)
+	console.log(req.user)
 }
 
 const getUsers = async () => {
@@ -26,9 +25,14 @@ const getUser = async ({ email, id }) => {
 	}
 }
 
+const updateUser = async (data, { user }) => {
+	console.log(data)
+}
+
 module.exports = {
 	profile,
-
 	getUser,
 	getUsers,
+
+	updateUser,
 }

@@ -35,9 +35,10 @@ const isAuth = [
 	async (err, req, res, _next) => {
 		if (err.inner && err.inner instanceof TokenExpiredError) {
 			const token = req.headers.authorization.split(' ')[1]
+
 			const newToken = await tokenService.updateToken(token)
 
-			console.log('Expired token')
+			console.log('Expired token', token, newToken)
 
 			return res.status(401).send({
 				message: 'Expired token',

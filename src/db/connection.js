@@ -6,7 +6,7 @@ const connect = async () => {
 	if (NODE_ENV !== 'test') {
 		try {
 			mongoose.connection.on('connected', () =>
-				logger('Mongoose default connection open to ' + DB_URL)
+				logger('Mongoose connection open to ' + DB_URL)
 			)
 
 			await mongoose.connect(DB_URL, {

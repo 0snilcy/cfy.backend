@@ -10,3 +10,9 @@ type Query {
 type Mutation {
 	updateUser(data: UserInput): User
 }
+
+enum Role {
+	GUEST
+	USER
+	ADMIN
+}

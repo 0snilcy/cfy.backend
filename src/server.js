@@ -3,17 +3,18 @@ const { SERVER_PORT } = process.env
 const express = require('express')
 const app = express()
 const { connect } = require('./db/connection')
+const routes = require('./routes')
 
 const logger = require('debug')('components:server:')
 const morgan = require('morgan')
 app.use(morgan('dev'))
 
 app.use(express.json())
+app.use(routes)
 
 const start = async () => {
 	try {
 		await connect()
-		await require('./routes')(app)
 	} catch (err) {
 		console.log(err.message)
 	}

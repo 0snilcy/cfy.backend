@@ -14,6 +14,9 @@ const schema = new mongoose.Schema({
 		required: true,
 		min: 6,
 	},
+	name: {
+		type: String,
+	},
 })
 
 schema.pre('save', async function(next) {
@@ -44,6 +47,7 @@ schema.methods.getPublicFields = function() {
 	return {
 		email: this.email,
 		id: this.id,
+		name: this.name,
 	}
 }
 
