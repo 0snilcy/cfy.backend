@@ -42,10 +42,8 @@ class TokenService {
 	}
 
 	async getUserId({ sid }) {
-		return await this.redisClient.getAsync(sid)
+		return this.redisClient.getAsync(sid)
 	}
 }
 
-const tokenService = new TokenService()
-
-module.exports = { tokenService }
+module.exports = new TokenService()

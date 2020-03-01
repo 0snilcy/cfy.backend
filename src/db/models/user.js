@@ -17,6 +17,10 @@ const schema = new mongoose.Schema({
 	name: {
 		type: String,
 	},
+	isAdmin: {
+		type: Boolean,
+		default: false,
+	},
 })
 
 schema.pre('save', async function(next) {

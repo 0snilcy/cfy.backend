@@ -4,12 +4,14 @@ const express = require('express')
 const app = express()
 const { connect } = require('./db/connection')
 const routes = require('./routes')
+const cookieParser = require('cookie-parser')
 
 const logger = require('debug')('components:server:')
 const morgan = require('morgan')
 app.use(morgan('dev'))
 
 app.use(express.json())
+app.use(cookieParser())
 app.use(routes)
 
 const start = async () => {

@@ -1,11 +1,9 @@
 const { SECRET } = process.env
-const User = require('../../db/models/user')
+const User = require('../db/models/user')
 
 const expressJwt = require('express-jwt')
 const { TokenExpiredError } = require('jsonwebtoken')
-const { UnauthorizedError } = require('../../errors')
-
-const { tokenService } = require('../../services/token.service')
+const { UnauthorizedError } = require('../errors')
 
 const isAuth = [
 	expressJwt({
@@ -52,6 +50,4 @@ const isAuth = [
 	},
 ]
 
-module.exports = {
-	isAuth,
-}
+module.exports = isAuth
