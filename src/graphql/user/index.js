@@ -1,7 +1,8 @@
-const { GraphQLString, GraphQLObjectType, GraphQLBoolean } = require('graphql')
-const UserModelType = require('./model')
-const User = require('../../db/models/user')
+const logger = require('debug')('components:graphql:user ')
 
+const { GraphQLObjectType, GraphQLBoolean } = require('graphql')
+const UserModelType = require('./model')
+const isAuthResolver = require('./isauth')
 const tokenService = require('../../services/token.service')
 
 const UserType = new GraphQLObjectType({
@@ -9,9 +10,7 @@ const UserType = new GraphQLObjectType({
 	fields: {
 		me: {
 			type: UserModelType,
-			resolve(user, args, req, info) {
-				console.log(user)
-
+			resolve(user) {
 				return user
 			},
 		},
@@ -21,44 +20,33 @@ const UserType = new GraphQLObjectType({
 const query = {
 	name: 'UserQuery',
 	type: UserType,
-	async resolve(_, __, req) {
-		const { admin } = req.cookies
-		if (admin && admin === process.env.ADMIN) {
-			const user = await User.findById(process.env.ADMIN_ID)
-			if (user) {
-				// todo: mb used style with user in req?
-				// req.user = user
-				return user
-			}
-		}
+	resolve: isAuthResolver,
+}
 
-		const header = req.headers.Authorization || req.headers.authorization
-		if (header) {
-			const [type, token] = header.split(' ')
-			if (type === 'Bearer' && token) {
-				const session = tokenService.verify(token)
-				if (session) {
-					const userId = await tokenService.getUserId(session)
+const UserMutation = new GraphQLObjectType({
+	name: 'UserMutation',
+	fields: {
+		logout: {
+			type: GraphQLBoolean,
+			async resolve(user, __, { req }) {
+				if (req.token) {
+					logger('Logout ', user.email)
 
-					try {
-						const user = await User.findById(userId)
-
-						if (!user) {
-							return new Error('Invalid token')
-						}
-
-						return user.getPublicFields()
-					} catch (err) {
-						return new Error(err.message)
-					}
+					await tokenService.removeToken(req.token)
+					return true
 				}
-			}
-		}
-
-		throw new Error('Invalid authentication')
+			},
+		},
 	},
+})
+
+const mutation = {
+	name: 'UserMutation',
+	type: UserMutation,
+	resolve: isAuthResolver,
 }
 
 module.exports = {
 	query,
+	mutation,
 }

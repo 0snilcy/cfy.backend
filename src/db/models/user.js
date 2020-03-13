@@ -8,6 +8,7 @@ const schema = new mongoose.Schema({
 		required: true,
 		unique: true,
 		trim: true,
+		isPublic: true,
 	},
 	password: {
 		type: String,
@@ -16,10 +17,7 @@ const schema = new mongoose.Schema({
 	},
 	name: {
 		type: String,
-	},
-	isAdmin: {
-		type: Boolean,
-		default: false,
+		isPublic: true,
 	},
 })
 
@@ -48,11 +46,16 @@ schema.methods.comparePassword = async function(password) {
 }
 
 schema.methods.getPublicFields = function() {
-	return {
-		email: this.email,
-		id: this.id,
-		name: this.name,
-	}
+	const fields = schema.obj
+	const publicFields = Object.keys(fields)
+		.filter(key => fields[key].isPublic)
+		.reduce((obj, key) => {
+			obj[key] = this[key]
+			return obj
+		}, {})
+
+	publicFields.id = this.id
+	return publicFields
 }
 
 const User = mongoose.model('User', schema)

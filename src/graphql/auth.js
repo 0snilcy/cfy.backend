@@ -1,16 +1,18 @@
 const logger = require('debug')('components:graphql:auth ')
 
-const {
-	GraphQLObjectType,
-	GraphQLString,
-	GraphQLNonNull,
-	GraphQLSchema,
-	GraphQLBoolean,
-} = require('graphql')
+const { GraphQLObjectType, GraphQLString, GraphQLNonNull } = require('graphql')
 
 const UserType = require('./user/model')
 const User = require('../db/models/user')
 const tokenService = require('../services/token.service')
+
+const AuthUserType = new GraphQLObjectType({
+	name: 'AuthUserType',
+	fields: {
+		user: { type: UserType },
+		token: { type: new GraphQLNonNull(GraphQLString) },
+	},
+})
 
 const AuthMutationType = new GraphQLObjectType({
 	name: 'AuthMutationType',
@@ -18,7 +20,7 @@ const AuthMutationType = new GraphQLObjectType({
 	fields: {
 		login: {
 			description: 'Authorization of an existing user',
-			type: UserType,
+			type: AuthUserType,
 			args: {
 				email: { type: new GraphQLNonNull(GraphQLString) },
 				password: { type: new GraphQLNonNull(GraphQLString) },
@@ -49,7 +51,7 @@ const AuthMutationType = new GraphQLObjectType({
 		},
 		create: {
 			description: 'Create a new user',
-			type: UserType,
+			type: AuthUserType,
 			args: {
 				email: { type: new GraphQLNonNull(GraphQLString) },
 				password: { type: new GraphQLNonNull(GraphQLString) },
@@ -75,7 +77,7 @@ const AuthMutationType = new GraphQLObjectType({
 				const user = await User.create(fields)
 
 				return {
-					...user.getPublicFields(),
+					user: user.getPublicFields(),
 					token: await tokenService.createToken(user.id),
 				}
 			},

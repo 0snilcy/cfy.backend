@@ -1,9 +1,4 @@
-const {
-	GraphQLObjectType,
-	GraphQLSchema,
-	GraphQLString,
-	GraphQLBoolean,
-} = require('graphql')
+const { GraphQLObjectType, GraphQLSchema } = require('graphql')
 
 const user = require('./user')
 const auth = require('./auth')
@@ -19,6 +14,7 @@ const RootMutation = new GraphQLObjectType({
 	name: 'RootMutation',
 	fields: {
 		auth: auth.mutation,
+		user: user.mutation,
 	},
 })
 

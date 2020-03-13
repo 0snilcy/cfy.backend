@@ -5,9 +5,10 @@ const { SECRET } = process.env
 const bluebird = require('bluebird')
 bluebird.promisifyAll(redis.RedisClient.prototype)
 const uuid = require('uuid/v4')
+const isDev = process.env.NODE_ENV === 'development'
 
 const defaultJwtConfig = {
-	expiresIn: '20m',
+	expiresIn: isDev ? '30d' : '20m',
 }
 
 class TokenService {
@@ -26,11 +27,16 @@ class TokenService {
 	async updateToken(token) {
 		const payload = this.decode(token)
 		const userId = await this.getUserId(payload)
-		await this.redisClient.delAsync(payload.sid)
 
 		if (userId) {
+			await this.redisClient.delAsync(payload.sid)
 			return this.createToken(userId)
 		}
+	}
+
+	async removeToken(token) {
+		const { sid } = this.decode(token)
+		await this.redisClient.delAsync(sid)
 	}
 
 	decode(token) {
