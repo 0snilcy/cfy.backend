@@ -5,6 +5,7 @@ const { GraphQLObjectType, GraphQLString, GraphQLNonNull } = require('graphql')
 const UserType = require('./user/model')
 const User = require('../db/models/user')
 const tokenService = require('../services/token.service')
+const { UserInputError } = require('apollo-server-express')
 
 const AuthUserType = new GraphQLObjectType({
 	name: 'AuthUserType',
@@ -36,7 +37,7 @@ const AuthMutationType = new GraphQLObjectType({
 
 							if (verify) {
 								return {
-									...user.getPublicFields(),
+									user: user.getPublicFields(),
 									token: await tokenService.createToken(user.id),
 								}
 							}
@@ -46,7 +47,7 @@ const AuthMutationType = new GraphQLObjectType({
 					}
 				}
 
-				throw new Error('Incorrect email or password')
+				throw new UserInputError('Incorrect email or password')
 			},
 		},
 		create: {
@@ -62,13 +63,13 @@ const AuthMutationType = new GraphQLObjectType({
 				logger('Create ', email, password)
 
 				if (!email || !password) {
-					throw new Error('Invalid data')
+					throw new UserInputError('Invalid data')
 				}
 
 				try {
 					const user = await User.findOne({ email })
 					if (user) {
-						throw new Error('User alrady exist')
+						throw new UserInputError('User alrady exist')
 					}
 				} catch (err) {
 					throw new Error(err.message)
