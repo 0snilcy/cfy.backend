@@ -5,10 +5,10 @@ const { SECRET } = process.env
 const bluebird = require('bluebird')
 bluebird.promisifyAll(redis.RedisClient.prototype)
 const uuid = require('uuid/v4')
-const isDev = process.env.NODE_ENV === 'development'
+const expiresIn = process.env.TOKEN_EXPIRED
 
 const defaultJwtConfig = {
-	expiresIn: isDev ? '30d' : '20m',
+	expiresIn,
 }
 
 class TokenService {
