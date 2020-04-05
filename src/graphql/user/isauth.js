@@ -22,7 +22,7 @@ const isAuthResolver = async function(_, __, { req }) {
 					const user = await User.findById(userId)
 
 					if (!user) {
-						return new Error('Invalid token')
+						return new AuthenticationError('Invalid token')
 					}
 
 					req.token = token
@@ -33,14 +33,11 @@ const isAuthResolver = async function(_, __, { req }) {
 					const newToken = await tokenService.updateToken(token)
 					if (newToken) {
 						err.token = newToken
-
 						throw new ExpiredError(err)
-					} else {
-						throw new AuthenticationError('Invalid token')
 					}
 				}
 
-				throw err
+				throw new AuthenticationError('Invalid token')
 			}
 		}
 	}
